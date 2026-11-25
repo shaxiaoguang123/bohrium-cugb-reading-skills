@@ -1,0 +1,14 @@
+---
+name: aligned-paper-translation
+description: Translate scientific literature into the requested language with paragraph alignment, a grounded terminology register and an audit of quantities and logical qualifiers.
+---
+Build the source inventory before translating. For PDFs use pdftotext -layout and compare multi-column pages with a rendered page; for text preserve heading, paragraph, caption, table-cell and footnote boundaries. Record physical page, section and order. Join a cross-page sentence only after confirming both ends, retain both anchors. Assign IDs before chunking; the last paragraph of the previous chunk is read-only context.
+Read the abstract and definitions to establish a glossary of source form, expansion, preferred target form, first anchor and justified exceptions. Resolve homonyms from local domain and units. Preserve abbreviations at first definition. Translate in document order into the requested target language and register. Keep exact values, signs, ranges, exponents, citations, equation tags and figure references. Mark antecedents for “it/this/former” before translating. For each comparative sentence identify comparator, outcome, direction and condition; preserve negation scope, possibility, concession and attribution. Distinguish significant in a statistical sense from appreciable.
+Write parallel rows with stable ID, verbatim source, target, locator and notes only for consequential choices. Include headings, captions and table headers within scope. Supply clean continuous translation plus glossary when requested. Use the script on UTF-8 JSONL rows with id/source/target. Inspect every reported difference against the source, recording legitimate localized notation. Compare row IDs against the original inventory to catch omissions. If OCR is unreliable flag the exact span. Never fill an unreadable number.
+示例：输入 Methods §2 “A decrease of 2% was not observed.”，调用本 Skill 要求英译中，示意译文“未观察到 2% 的下降。”；不可改成“下降不足 2%”。运行 python3 /skills/weekly-skill/audit.py rows.jsonl。
+
+## 运行与交付
+读取 /input/case.json、task.md 及引用的实际材料，把每个 output_contract 字段映射到本次要生成的内容。以文件内容校正题签。中间文件留在 /app/work，先保存可核验的部分结果，再补全。最终写 /app/output/result.json，保留原 case_id 和契约要求的名称、层次、类型，另存案例要求的可编辑产物。Office 类产物需用可用的渲染器实际导出 PDF/PNG 供检查。
+每条关键结果附文件名、页/节/行或图表号、最短可核对原文；推断与原文分开。缺失、未报告、材料冲突和工具失败分别标记，列出已完成范围、失败位置及下一步。记录实际变更与证据，不估算对照得分。检查 JSON 可解析、所有引用的文件存在、打开最终产物并抽核首尾及高风险项。运行 python3 /skills/weekly-skill/check.py /input/case.json /app/output/result.json 检查身份及标准 JSON Schema 的必需键；非标准契约逐项人工核对。依赖 Python 3.8+ 标准库。
+
+以**原文**独立产生 inventory.jsonl，每行含 id、source、locator，含正文及范围内所有题注/表头。每批译文写 translated.jsonl（id、target），术语词表 terms.json 为 {"yield strength":["屈服强度"]}。运行 python3 /skills/weekly-skill/align.py inventory.jsonl translated.jsonl terms.json > alignment.json，按原文顺序得到带定位的 pairs 与遗漏、重复、未登记 ID、译名漂移的问题清单。允许的别名须有领域依据。先修复 issues，再给数字审核脚本传入 pairs 的 JSONL 行。对“未见显著差异”单独核对统计否定范围，术语命中不能替代语义审读。
